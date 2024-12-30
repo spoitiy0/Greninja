@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keshav Chat</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #4e54c8, #8f94fb);
+            color: #ffffff;
+        }
+
+        .chat-container {
+            width: 90%;
+            max-width: 600px;
+            margin: 50px auto;
+            background: #1e1e2f;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            display: none; /* Hidden by default */
+            flex-direction: column;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #4e54c8, #8f94fb);
+            padding: 20px;
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background: #2e2e44;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-messages p {
+            margin: 10px 0;
+            background: #4e54c8;
+            padding: 10px;
+            border-radius: 10px;
+            color: #fff;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        .chat-input {
+            display: flex;
+            flex-wrap: wrap; /* Allow wrapping for small screens */
+            gap: 10px; /* Add spacing between input elements */
+            padding: 15px;
+            background: #1e1e2f;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .chat-input input[type="text"] {
+            flex: 1; /* Adjust to take available space */
+            min-width: 60%; /* Ensure usability on smaller screens */
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            background: #2e2e44;
+            color: #ffffff;
+            font-size: 16px;
+        }
+
+        .chat-input input[type="file"] {
+            flex: 1;
+            max-width: 30%;
+            background: #2e2e44;
+            color: #ffffff;
+            font-size: 14px;
+        }
+
+        .chat-input button {
+            flex: 1; /* Ensure the button adjusts size */
+            max-width: 30%; /* Limit button width */
+            padding: 10px;
+            background: linear-gradient(135deg, #4e54c8, #8f94fb);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        /* Responsive adjustments for very small screens */
+        @media (max-width: 600px) {
+            .chat-input {
+                flex-direction: column; /* Stack inputs vertically */
+            }
+
+            .chat-input input[type="file"], 
+            .chat-input button {
+                max-width: 100%; /* Full width on smaller screens */
+            }
+        }
+
+        .password-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .password-box {
+            background: #1e1e2f;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            color: #ffffff;
+            width: 300px;
+        }
+
+        .password-box input {
+            width: 90%;
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+            background: #2e2e44;
+            color: #ffffff;
+            font-size: 16px;
+        }
+
+        .password-box button {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #4e54c8, #8f94fb);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Password Prompt Overlay -->
+    <div class="password-overlay" id="passwordOverlay">
+        <div class="password-box">
+            <h2>Enter Password</h2>
+            <input type="password" id="passwordInput" placeholder="Enter password" />
+            <button onclick="checkPassword()">Submit</button>
+        </div>
+    </div>
+
+    <!-- Chat Container -->
+    <div class="chat-container" id="chatContainer">
+        <div class="chat-header">Keshav Chat App</div>
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input">
+            <input type="text" id="messageInput" placeholder="Type your message here..." />
+            <input type="file" id="imageInput" accept="image/*">
+            <button id="sendButton">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const PASSWORD = "444566"; // Define the password
+
+        // Function to check the password
+        function checkPassword() {
+            const userPassword = document.getElementById("passwordInput").value;
+            if (userPassword === PASSWORD) {
+                document.getElementById("passwordOverlay").style.display = "none";
+                document.getElementById("chatContainer").style.display = "flex";
+            } else {
+                alert("Incorrect password. Access denied.");
+            }
+        }
+
+        // Chat functionality
+        const messageInput = document.getElementById("messageInput");
+        const imageInput = document.getElementById("imageInput");
+        const chatMessages = document.getElementById("chatMessages");
+        const sendButton = document.getElementById("sendButton");
+
+        function loadMessages() {
+            const savedMessages = JSON.parse(localStorage.getItem("chatMessages")) || [];
+            savedMessages.forEach(item => {
+                if (item.type === "text") {
+                    appendTextMessage(item.content, true);
+                } else if (item.type === "image") {
+                    appendImageMessage(item.content, true);
+                }
+            });
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function saveMessage(content, type) {
+            const savedMessages = JSON.parse(localStorage.getItem("chatMessages")) || [];
+            savedMessages.push({ type, content });
+            localStorage.setItem("chatMessages", JSON.stringify(savedMessages));
+        }
+
+        function appendTextMessage(messageText, isFromStorage = false) {
+            const messageElement = document.createElement("p");
+            messageElement.textContent = messageText;
+            chatMessages.appendChild(messageElement);
+            if (!isFromStorage) saveMessage(messageText, "text");
+        }
+
+        function appendImageMessage(imageURL, isFromStorage = false) {
+            const imageElement = document.createElement("img");
+            imageElement.src = imageURL;
+            imageElement.alt = "Sent Image";
+            imageElement.style.maxWidth = "80%";
+            imageElement.style.borderRadius = "15px";
+            imageElement.style.marginTop = "10px";
+            chatMessages.appendChild(imageElement);
+            if (!isFromStorage) saveMessage(imageURL, "image");
+        }
+
+        sendButton.addEventListener("click", () => {
+            const messageText = messageInput.value.trim();
+            if (messageText !== "") {
+                appendTextMessage(messageText);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                messageInput.value = "";
+            }
+        });
+
+        imageInput.addEventListener("change", event => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    appendImageMessage(e.target.result);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        window.addEventListener("load", loadMessages);
+    </script>
+
+</body>
+</html>	
